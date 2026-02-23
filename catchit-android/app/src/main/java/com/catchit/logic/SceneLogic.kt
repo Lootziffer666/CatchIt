@@ -2,114 +2,88 @@ package com.catchit.logic
 
 import androidx.compose.ui.graphics.Color
 
-// --- Flow: Wo im Ablauf ist der Nutzer? ---
 enum class FlowPhase {
-    ASKING,    // Fragen werden gestellt (Start)
-    IDLE,      // Alles geplant, noch Zeit
-    TRACKING,  // Aktiv unterwegs / kurz vor Abfahrt
-    ALERTING   // Kritisch! Jetzt handeln!
+    ASKING,
+    IDLE,
+    TRACKING,
+    ALERTING
 }
 
-// --- Dringlichkeit: Wie ernst ist die Lage? ---
 enum class AlertLevel {
-    CALM,      // Alles gut (heller Hintergrund)
-    READY,     // Bald geht's los (Orange)
-    WARNING,   // Aufpassen (Dunkel-Orange)
-    ALERT      // Sofort handeln! (Rot)
+    CALM,
+    READY,
+    WARNING,
+    ALERT
 }
 
-// --- Katzen-Varianten fuer die Poster-Grafik ---
 enum class CatVariant {
-    PORTRAIT_MIN,      // Einfacher Kopf + Augen
-    PEEK_TWO_CATS,     // Zwei Katzen schauen neugierig
-    ANGRY_FULLBODY,    // Boese Katze bei Alert
-    COMPANION_WEIRD    // Irrer Blick + Grinsen (selten, persoenlich)
+    PORTRAIT_MIN,
+    PEEK_TWO_CATS,
+    ANGRY_FULLBODY,
+    COMPANION_WEIRD
 }
 
-// --- Das komplette visuelle "Rezept" fuer einen Screen ---
 data class SceneConfig(
     val backgroundColor: Color,
-    val contentColor: Color,         // Text/Icons (Kontrast zum Hintergrund)
-    val useLightSystemBars: Boolean, // true = dunkle Icons in Statusbar (fuer helle BGs)
+    val contentColor: Color,
+    val useDarkSystemBarIcons: Boolean,
     val variant: CatVariant,
-    val headline: String
+    val headline: String,
+    val subline: String
 )
 
-// --- Brand-Farben ---
-val BrandBlack  = Color(0xFF0B0B0D)
-val BrandWhite  = Color(0xFFF7F2E8)
+val BrandBlack = Color(0xFF0B0B0D)
+val BrandOffWhite = Color(0xFFF7F2E8)
 val BrandOrange = Color(0xFFFF7A00)
-val BrandRed    = Color(0xFFD60000)
-val BrandYellow = Color(0xFFF5C518) // Iris-Farbe
+val BrandRed = Color(0xFFD60000)
+val BrandYellow = Color(0xFFF9C80E)
 
-/**
- * Pure Function: Gleiche Eingabe = Gleiches Ergebnis. Immer.
- *
- * Bestimmt anhand von Phase, Dringlichkeit und einem Seed
- * das komplette Aussehen des Screens.
- */
 fun mapStateToScene(phase: FlowPhase, alertLevel: AlertLevel, seed: Int): SceneConfig {
+    val weirdAllowed = phase == FlowPhase.ASKING && alertLevel != AlertLevel.ALERT
+    val weirdRoll = ((seed * 1_103_515_245L + 12_345L) ushr 16).toInt() and 0x7FFF
+    val isWeird = weirdAllowed && (weirdRoll % 100) < 8
 
-    // 1. "Weird Companion" Regel:
-    //    - Nur wenn der Nutzer gerade Fragen beantwortet (ASKING)
-    //    - NIEMALS bei ALERT (da muss es ernst bleiben)
-    //    - 8% Chance, deterministisch per Seed
-    val isWeird = if (phase == FlowPhase.ASKING && alertLevel != AlertLevel.ALERT) {
-        val hash = ((seed.toLong() * 1103515245L + 12345L) ushr 16).toInt() and 0x7FFF
-        (hash % 100) < 8
-    } else {
-        false
-    }
-
-    // 2. Hintergrund nach Dringlichkeit
     val bg = when (alertLevel) {
-        AlertLevel.CALM    -> BrandWhite              // Hell, entspannt
-        AlertLevel.READY   -> BrandOrange             // Orange, aufmerksam
-        AlertLevel.WARNING -> Color(0xFFFF4D00)       // Dunkel-Orange, dringend
-        AlertLevel.ALERT   -> BrandRed                // Rot, sofort handeln
+        AlertLevel.CALM -> BrandOffWhite
+        AlertLevel.READY -> BrandYellow
+        AlertLevel.WARNING -> BrandOrange
+        AlertLevel.ALERT -> BrandRed
     }
 
-    // 3. Textfarbe: Hell auf dunkel, Dunkel auf hell
-    //    Berechnet ueber Luminanz des Hintergrunds
-    val bgLuminance = bg.red * 0.299f + bg.green * 0.587f + bg.blue * 0.114f
-    val onBg = if (bgLuminance > 0.5f) BrandBlack else BrandWhite
+    val useDarkIcons = bg.luminance() > 0.5f
+    val onBg = if (useDarkIcons) BrandBlack else BrandOffWhite
 
-    // 4. System-Bar: Dunkle Icons nur auf hellem Hintergrund
-    //    (useLightSystemBars=true bedeutet: dunkle Icons = fuer helle Screens)
-    val lightBars = bgLuminance > 0.5f
-
-    // 5. Welche Katze zeigen wir?
     val variant = when {
         alertLevel == AlertLevel.ALERT -> CatVariant.ANGRY_FULLBODY
-        isWeird                        -> CatVariant.COMPANION_WEIRD
-        phase == FlowPhase.ASKING      -> CatVariant.PEEK_TWO_CATS
-        else                           -> CatVariant.PORTRAIT_MIN
+        isWeird -> CatVariant.COMPANION_WEIRD
+        phase == FlowPhase.ASKING -> CatVariant.PEEK_TWO_CATS
+        else -> CatVariant.PORTRAIT_MIN
     }
 
-    // 6. Headline
-    val headline = when (phase) {
-        FlowPhase.ASKING   -> "Wohin musst du?"
-        FlowPhase.IDLE     -> "Alles ruhig."
-        FlowPhase.TRACKING -> "Abfahrten geladen"
-        FlowPhase.ALERTING -> "JETZT LOS"
+    val headline = when (alertLevel) {
+        AlertLevel.CALM -> "Alles ruhig"
+        AlertLevel.READY -> "Bald aufbrechen"
+        AlertLevel.WARNING -> "Es wird knapp"
+        AlertLevel.ALERT -> "Jetzt los"
     }
 
-    return SceneConfig(bg, onBg, lightBars, variant, headline)
+    val subline = when (phase) {
+        FlowPhase.ASKING -> "Stelle dein Ziel und die Zeit ein"
+        FlowPhase.IDLE -> "Noch keine aktive Verfolgung"
+        FlowPhase.TRACKING -> "Tracking laeuft"
+        FlowPhase.ALERTING -> "Sofort handeln"
+    }
+
+    return SceneConfig(
+        backgroundColor = bg,
+        contentColor = onBg,
+        useDarkSystemBarIcons = useDarkIcons,
+        variant = variant,
+        headline = headline,
+        subline = subline
+    )
 }
 
-/**
- * Berechnet die Dringlichkeit anhand der Minuten bis zur naechsten Abfahrt.
- *
- * > 15 min  → CALM    (alles gut, kein Stress)
- * 8-15 min  → READY   (bald geht's los)
- * 3-8 min   → WARNING (aufpassen, losgehen)
- * < 3 min   → ALERT   (JETZT oder verpasst)
- */
-fun alertFromMinutes(minutes: Long): AlertLevel {
-    return when {
-        minutes > 15 -> AlertLevel.CALM
-        minutes > 8  -> AlertLevel.READY
-        minutes > 3  -> AlertLevel.WARNING
-        else         -> AlertLevel.ALERT
-    }
+fun companionIsAllowed(phase: FlowPhase, alertLevel: AlertLevel): Boolean {
+    return phase == FlowPhase.ASKING && alertLevel != AlertLevel.ALERT
 }
