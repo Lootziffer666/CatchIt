@@ -13,12 +13,27 @@
   - 🔴 < 3 min → JETZT LOS (rot, wütende Katze)
 - **Kein API-Key nötig** — Nutzt die freie v6.db.transport.rest API (gesamtes deutsches Netz)
 
-## Installation
+## Build
 
-1. ZIP entpacken
-2. In Android Studio öffnen (File → Open)
-3. Gradle synchronisieren lassen
-4. Grünen Play-Button drücken
+Build from the command line (no IDE required):
+
+    cd catchit-android
+    ./gradlew assembleDebug
+
+The resulting APK is at `app/build/outputs/apk/debug/app-debug.apk`.
+
+Requirements:
+- JDK 17 or newer
+- Android SDK with build-tools for compileSdk 36
+- ANDROID_HOME or local.properties pointing to your SDK
+
+## Run
+
+1. Open the `catchit-android` folder in Android Studio (File -> Open)
+2. Let Gradle sync finish
+3. Press the green Run button (or Shift+F10)
+
+Android-only. No iOS support planned.
 
 ## Architektur
 
