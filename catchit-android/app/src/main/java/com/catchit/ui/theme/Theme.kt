@@ -1,26 +1,45 @@
 package com.catchit.ui.theme
 
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.isSystemInDarkTheme
+import com.catchit.logic.BrandBlack
+import com.catchit.logic.BrandOffWhite
+import com.catchit.logic.BrandOrange
+import com.catchit.logic.BrandRed
+import com.catchit.logic.BrandYellow
 
-/**
- * CatchIt nutzt ein eigenes Farbsystem (SceneLogic steuert alles).
- * Dieses Theme setzt nur Standard-Defaults fuer Material3-Components
- * wie Buttons, Chips, etc.
- */
+private val LightColors = lightColorScheme(
+    primary = BrandOrange,
+    onPrimary = BrandOffWhite,
+    secondary = BrandYellow,
+    onSecondary = BrandBlack,
+    error = BrandRed,
+    background = BrandOffWhite,
+    onBackground = BrandBlack,
+    surface = BrandOffWhite,
+    onSurface = BrandBlack
+)
+
+private val DarkColors = darkColorScheme(
+    primary = BrandOrange,
+    onPrimary = BrandBlack,
+    secondary = BrandYellow,
+    onSecondary = BrandBlack,
+    error = BrandRed,
+    background = BrandBlack,
+    onBackground = BrandOffWhite,
+    surface = BrandBlack,
+    onSurface = BrandOffWhite
+)
+
 @Composable
 fun CatchItTheme(content: @Composable () -> Unit) {
+    val colorScheme = if (isSystemInDarkTheme()) DarkColors else LightColors
     MaterialTheme(
-        colorScheme = lightColorScheme(
-            primary = Color(0xFFFF7A00),     // CatchIt Orange
-            onPrimary = Color.White,
-            secondary = Color(0xFF0B0B0D),   // CatchIt Schwarz
-            onSecondary = Color.White,
-            surface = Color(0xFFF7F2E8),     // Off-White
-            onSurface = Color(0xFF0B0B0D),
-        ),
+        colorScheme = colorScheme,
         content = content
     )
 }
