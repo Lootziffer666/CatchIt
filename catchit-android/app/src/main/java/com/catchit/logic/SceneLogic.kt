@@ -1,6 +1,7 @@
 package com.catchit.logic
 
 import androidx.compose.ui.graphics.Color
+import com.catchit.util.relativeLuminance
 
 enum class FlowPhase {
     ASKING,
@@ -50,7 +51,7 @@ fun mapStateToScene(phase: FlowPhase, alertLevel: AlertLevel, seed: Int): SceneC
         AlertLevel.ALERT -> BrandRed
     }
 
-    val useDarkIcons = bg.luminance() > 0.5f
+    val useDarkIcons = bg.relativeLuminance() > 0.5f
     val onBg = if (useDarkIcons) BrandBlack else BrandOffWhite
 
     val variant = when {
