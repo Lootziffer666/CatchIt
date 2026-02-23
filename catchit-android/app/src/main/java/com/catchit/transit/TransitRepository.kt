@@ -57,7 +57,7 @@ class TransitRepository {
      */
     suspend fun getDepartures(stopId: String): Result<List<DisplayDeparture>> {
         return try {
-            val departures = api.getDepartures(stopId)
+            val departures = api.getDepartures(stopId).departures
             val now = OffsetDateTime.now()
 
             val display = departures.mapNotNull { dep ->

@@ -38,5 +38,5 @@ interface TransitApi {
         @Path("stopId") stopId: String,
         @Query("duration") durationMinutes: Int = 60,
         @Query("results") results: Int = 20
-    ): List<Departure>
+    ): DeparturesResponse
 }

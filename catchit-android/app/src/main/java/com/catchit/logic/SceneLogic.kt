@@ -98,6 +98,14 @@ fun mapStateToScene(phase: FlowPhase, alertLevel: AlertLevel, seed: Int): SceneC
 }
 
 /**
+ * Gibt an, ob der Weird Companion in einem gegebenen Zustand erscheinen darf.
+ * Bedingungen: Phase == ASKING und AlertLevel != ALERT.
+ */
+fun companionIsAllowed(phase: FlowPhase, alertLevel: AlertLevel): Boolean {
+    return phase == FlowPhase.ASKING && alertLevel != AlertLevel.ALERT
+}
+
+/**
  * Berechnet die Dringlichkeit anhand der Minuten bis zur naechsten Abfahrt.
  *
  * > 15 min  → CALM    (alles gut, kein Stress)
