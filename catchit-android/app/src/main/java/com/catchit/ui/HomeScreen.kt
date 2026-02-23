@@ -56,6 +56,7 @@ import com.catchit.logic.mapStateToScene
 import com.catchit.ui.graphics.CatPoster
 import com.google.android.gms.location.LocationServices
 import java.time.LocalTime
+import com.catchit.util.relativeLuminance
 
 enum class TileType {
     JOURNEY_TYPE,
@@ -293,12 +294,12 @@ private fun TileCard(
     onFocus: () -> Unit,
     onAnswered: (String) -> Unit
 ) {
-    val tileBg = if (sceneContentColor.luminance() > 0.5f) {
+    val tileBg = if (sceneContentColor.relativeLuminance() > 0.5f) {
         Color.Black.copy(alpha = 0.32f)
     } else {
         Color.White.copy(alpha = 0.92f)
     }
-    val tileFg = if (tileBg.luminance() > 0.5f) BrandBlack else BrandOffWhite
+    val tileFg = if (tileBg.relativeLuminance() > 0.5f) BrandBlack else BrandOffWhite
 
     Card(
         modifier = Modifier
